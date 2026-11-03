@@ -1,6 +1,7 @@
-{% load l10n %}<!DOCTYPE html>
+{% load static l10n %}<!DOCTYPE html>
 <html lang="fr">
 <head>
+<link rel="icon" href="{% static 'echeancier.ico' %}">
 <meta charset="utf-8">
 <title>Échéancier</title>
 <style>
@@ -12,11 +13,21 @@
   tfoot td { font-weight: bold; background: #f4f4f4; }
   .alerte { background: #fdebd8; border: 1px solid #f0b27a; padding: .6rem 1rem; border-radius: 6px; }
   .info { color: #555; }
+  .filtre a { margin-right: .8rem; text-decoration: none; padding: .2rem .6rem; border-radius: 4px; }
+  .filtre a.actif { background: #3f7090; color: #fff; }
+  tr.groupe td { font-weight: bold; }
+  tr.sous td { color: #555; }
+  tr.sous td:first-child { padding-left: 1.8rem; }
 </style>
 </head>
 <body>
 <h1>Échéancier</h1>
-<p><a href="{% url 'admin:index' %}">Saisir / modifier les contrats</a></p>
+<p><a href="{% url 'admin:index' %}">Saisir / modifier les contrats</a> · <a href="{% url 'calendrier_ics' %}">Exporter les fins de contrat (.ics)</a></p>
+
+<p class="filtre">Pays :
+  <a href="{% url 'totaux' %}"{% if not pays %} class="actif"{% endif %}>Tous</a>
+  {% for code, nom in pays_choix %}<a href="?pays={{ code }}"{% if pays == code %} class="actif"{% endif %}>{{ nom }}</a>{% endfor %}
+</p>
 
 {% if taux %}
   <p class="info">Taux utilisé : <strong>{{ taux }}</strong></p>
@@ -38,8 +49,8 @@
   </thead>
   <tbody>
   {% for r in rubriques %}
-    <tr>
-      <td>{{ r.nom }}</td>
+    <tr{% if r.niveau %} class="sous"{% elif r.a_enfants %} class="groupe"{% endif %}>
+      <td>{% if r.niveau %}↳ {% endif %}{{ r.nom }}</td>
       <td>{{ r.m_dop|floatformat:2 }}</td><td>{{ r.m_eur|floatformat:2 }}</td><td>{% if r.m_conv is not None %}{{ r.m_conv|floatformat:2 }}{% else %}—{% endif %}</td>
       <td>{{ r.r_dop|floatformat:2 }}</td><td>{{ r.r_eur|floatformat:2 }}</td><td>{% if r.r_conv is not None %}{{ r.r_conv|floatformat:2 }}{% else %}—{% endif %}</td>
     </tr>
@@ -55,6 +66,32 @@
     </tr>
   </tfoot>
 </table>
+
+{% if not pays and lignes_pays|length > 1 %}
+<h2>Par pays</h2>
+<table>
+  <thead>
+    <tr>
+      <th rowspan="2">Pays</th>
+      <th colspan="3">À payer par mois</th>
+      <th colspan="3">Total restant à payer</th>
+    </tr>
+    <tr>
+      <th>DOP</th><th>EUR</th><th>Converti en €</th>
+      <th>DOP</th><th>EUR</th><th>Converti en €</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for r in lignes_pays %}
+    <tr>
+      <td>{{ r.nom }}</td>
+      <td>{{ r.m_dop|floatformat:2 }}</td><td>{{ r.m_eur|floatformat:2 }}</td><td>{% if r.m_conv is not None %}{{ r.m_conv|floatformat:2 }}{% else %}—{% endif %}</td>
+      <td>{{ r.r_dop|floatformat:2 }}</td><td>{{ r.r_eur|floatformat:2 }}</td><td>{% if r.r_conv is not None %}{{ r.r_conv|floatformat:2 }}{% else %}—{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
 
 {% if bientot %}
 <div class="alerte">

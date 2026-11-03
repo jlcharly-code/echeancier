@@ -4,13 +4,15 @@ from .models import Rubrique, Contrat, TauxChange
 
 @admin.register(Rubrique)
 class RubriqueAdmin(admin.ModelAdmin):
+    list_display = ["__str__", "parent"]
+    list_filter = ["parent"]
     search_fields = ["nom"]
 
 
 @admin.register(Contrat)
 class ContratAdmin(admin.ModelAdmin):
-    list_display = ["nom", "rubrique", "montant_mensuel", "devise", "date_debut", "date_fin", "mois_restants", "total_restant"]
-    list_filter = ["rubrique", "devise"]
+    list_display = ["nom", "rubrique", "pays", "montant_mensuel", "devise", "date_debut", "date_fin", "mois_restants", "total_restant"]
+    list_filter = ["pays", "rubrique", "devise"]
     search_fields = ["nom"]
 
 

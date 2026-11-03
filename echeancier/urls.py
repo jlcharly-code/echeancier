@@ -21,4 +21,5 @@ from suivi import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.totaux, name='totaux'),
+    path('calendrier.ics', views.calendrier_ics, name='calendrier_ics'),
 ]
